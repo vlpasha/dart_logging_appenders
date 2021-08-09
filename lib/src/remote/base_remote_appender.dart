@@ -19,7 +19,9 @@ abstract class BaseLogSender extends BaseLogAppender {
   BaseLogSender({
     LogRecordFormatter? formatter,
     int? bufferSize,
+    Duration? timeInterval,
   })  : bufferSize = bufferSize ?? 500,
+        timeInterval = timeInterval ?? const Duration(seconds: 10),
         super(formatter);
 
   Map<String, String> _userProperties = {};
@@ -27,6 +29,9 @@ abstract class BaseLogSender extends BaseLogAppender {
   /// Maximum number of log entries to buffer before triggering sending
   /// of log entries. (default: 500)
   final int bufferSize;
+
+  /// Maximum time interval between sending single log entries. (default: 10s)
+  final Duration timeInterval;
 
   List<LogEntry> _logEvents = <LogEntry>[];
   Timer? _timer;
@@ -48,7 +53,7 @@ abstract class BaseLogSender extends BaseLogAppender {
     if (_logEvents.length > bufferSize) {
       _triggerSendLogEvents();
     } else {
-      _timer = Timer(const Duration(seconds: 10), () {
+      _timer = Timer(timeInterval, () {
         _timer = null;
         _triggerSendLogEvents();
       });
